@@ -1,0 +1,363 @@
+package project;
+
+import java.util.*;
+
+class User {
+    private String name;
+    private String address;
+    private String contactInfo;
+    private int accountNumber;
+    private double balance;
+    private List<Transaction> transactions;
+
+    public User(String name, String address, String contactInfo, int accountNumber, double balance) {
+        this.name = name;
+        this.address = address;
+        this.contactInfo = contactInfo;
+        this.accountNumber = accountNumber;
+        this.balance = balance;
+        this.transactions = new ArrayList<>();
+    }
+
+    // Getters and setters
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getContactInfo() {
+        return contactInfo;
+    }
+
+    public void setContactInfo(String contactInfo) {
+        this.contactInfo = contactInfo;
+    }
+
+    public int getAccountNumber() {
+        return accountNumber;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    // Other methods
+
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+    }
+}
+
+class Transaction {
+    private Date date;
+    private double amount;
+    private double balance;
+
+    public Transaction(double amount, double balance) {
+        this.date = new Date();
+        this.amount = amount;
+        this.balance = balance;
+    }
+
+  
+
+    public Date getDate() {
+        return date;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+}
+
+class BankingSystem {
+    private Map<Integer, User> users;
+    private int accountNumberCounter;
+
+    public BankingSystem() {
+        this.users = new HashMap<>();
+        this.accountNumberCounter = 0;
+    }
+
+    public void registerUser() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("User Registration");
+        System.out.println("-----------------");
+
+        System.out.print("Enter Your name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Your address: ");
+        String address = scanner.nextLine();
+        System.out.print("Enter Your contact information: ");
+        String contactInfo = scanner.nextLine();
+        System.out.print("Enter initial deposit amount: ");
+        double initialDeposit = scanner.nextDouble();
+
+        int accountNumber = generateAccountNumber();
+        User user = new User(name, address, contactInfo, accountNumber, initialDeposit);
+        users.put(accountNumber, user);
+
+        System.out.println("Congratulations ! Your Registration successfully Completed.");
+        System.out.println("Account number: " + accountNumber);
+    }
+
+    public void manageAccount(int accountNumber) {
+        User user = users.get(accountNumber);
+
+        if (user == null) {
+            System.out.println("Invalid account number , Enter Again.");
+            return;
+        }
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Account Management");
+        System.out.println("------------------");
+
+        System.out.println("1. View account information");
+        System.out.println("2. Update account information");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+
+        switch (choice) {
+            case 1:
+                System.out.println("Account Information");
+                System.out.println("-------------------");
+                System.out.println("Account Number: " + user.getAccountNumber());
+                System.out.println("Name: " + user.getName());
+                System.out.println("Address: " + user.getAddress());
+                System.out.println("Contact Information: " + user.getContactInfo());
+                System.out.println("Balance: " + user.getBalance());
+                break;
+            case 2:
+                System.out.println("Update Account Information");
+                System.out.println("--------------------------");
+                System.out.print("Enter new name: ");
+                scanner.nextLine(); // Consume the newline character
+                String newName = scanner.nextLine();
+                System.out.print("Enter new address: ");
+                String newAddress = scanner.nextLine();
+                System.out.print("Enter new contact information: ");
+                String newContactInfo = scanner.nextLine();
+
+                user.setName(newName);
+                user.setAddress(newAddress);
+                user.setContactInfo(newContactInfo);
+
+                System.out.println("Account information updated successfully.");
+                break;
+            default:
+                System.out.println("Invalid choice.");
+        }
+    }
+
+    public void deposit(int accountNumber) {
+        User user = users.get(accountNumber);
+
+        if (user == null) {
+            System.out.println("Invalid account number.");
+            return;
+        }
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Deposit");
+        System.out.println("-------");
+        System.out.print("Enter deposit amount: ");
+        double depositAmount = scanner.nextDouble();
+
+        double newBalance = user.getBalance() + depositAmount;
+        user.setBalance(newBalance);
+
+        Transaction transaction = new Transaction(depositAmount, newBalance);
+        user.addTransaction(transaction);
+
+        System.out.println("Deposit successful.");
+        System.out.println("Transaction amount: " + depositAmount);
+        System.out.println("New balance: " + newBalance);
+    }
+
+    public void withdraw(int accountNumber) {
+        User user = users.get(accountNumber);
+
+        if (user == null) {
+            System.out.println("Invalid account number.");
+            return;
+        }
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Withdrawal");
+        System.out.println("----------");
+        System.out.print("Enter withdrawal amount: ");
+        double withdrawalAmount = scanner.nextDouble();
+
+        if (withdrawalAmount > user.getBalance()) {
+            System.out.println("Insufficient funds.");
+            return;
+        }
+
+        double newBalance = user.getBalance() - withdrawalAmount;
+        user.setBalance(newBalance);
+
+        Transaction transaction = new Transaction(-withdrawalAmount, newBalance);
+        user.addTransaction(transaction);
+
+        System.out.println("Withdrawal successful.");
+        System.out.println("Transaction amount: " + withdrawalAmount);
+        System.out.println("New balance: " + newBalance);
+    }
+
+    public void transferFunds(int senderAccountNumber, int recipientAccountNumber) {
+        User sender = users.get(senderAccountNumber);
+        User recipient = users.get(recipientAccountNumber);
+
+        if (sender == null || recipient == null) {
+            System.out.println("Invalid account number(s).");
+            return;
+        }
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Fund Transfer");
+        System.out.println("-------------");
+        System.out.print("Enter transfer amount: ");
+        double transferAmount = scanner.nextDouble();
+
+        if (transferAmount > sender.getBalance()) {
+            System.out.println("Insufficient funds.");
+            return;
+        }
+
+        double senderNewBalance = sender.getBalance() - transferAmount;
+        double recipientNewBalance = recipient.getBalance() + transferAmount;
+
+        sender.setBalance(senderNewBalance);
+        recipient.setBalance(recipientNewBalance);
+
+        Transaction senderTransaction = new Transaction(-transferAmount, senderNewBalance);
+        Transaction recipientTransaction = new Transaction(transferAmount, recipientNewBalance);
+
+        sender.addTransaction(senderTransaction);
+        recipient.addTransaction(recipientTransaction);
+
+        System.out.println("Fund transfer successful.");
+        System.out.println("Transferred amount: " + transferAmount);
+        System.out.println("Sender's new balance: " + senderNewBalance);
+        System.out.println("Recipient's new balance: " + recipientNewBalance);
+    }
+
+    public void viewAccountStatements(int accountNumber) {
+        User user = users.get(accountNumber);
+
+        if (user == null) {
+            System.out.println("Invalid account number.");
+            return;
+        }
+
+        System.out.println("Account Statements");
+        System.out.println("------------------");
+        System.out.println("Account Number: " + user.getAccountNumber());
+        System.out.println("Name: " + user.getName());
+        System.out.println("Address: " + user.getAddress());
+        System.out.println("Contact Information: " + user.getContactInfo());
+        System.out.println("Balance: " + user.getBalance());
+        System.out.println("Transaction History:");
+
+        List<Transaction> transactions = user.getTransactions();
+
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions available.");
+        } else {
+            for (Transaction transaction : transactions) {
+                System.out.println("Date: " + transaction.getDate());
+                System.out.println("Amount: " + transaction.getAmount());
+                System.out.println("Balance: " + transaction.getBalance());
+                System.out.println("------------------");
+            }
+        }
+    }
+
+    private int generateAccountNumber() {
+        return ++accountNumberCounter;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        BankingSystem bankingSystem = new BankingSystem();
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("Banking Information System");
+            System.out.println("--------------------------");
+            System.out.println("1. Register User");
+            System.out.println("2. Manage Account");
+            System.out.println("3. Deposit");
+            System.out.println("4. Withdraw");
+            System.out.println("5. Transfer Funds");
+            System.out.println("6. View Account Statements");
+            System.out.println("7. Exit");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+
+            if (choice == 7) {
+                System.out.println("Exiting the system...");
+                break;
+            }
+
+            System.out.print("Enter account number: ");
+            int accountNumber = scanner.nextInt();
+
+            switch (choice) {
+                case 1:
+                    bankingSystem.registerUser();
+                    break;
+                case 2:
+                    bankingSystem.manageAccount(accountNumber);
+                    break;
+                case 3:
+                    bankingSystem.deposit(accountNumber);
+                    break;
+                case 4:
+                    bankingSystem.withdraw(accountNumber);
+                    break;
+                case 5:
+                    System.out.print("Enter recipient's account number: ");
+                    int recipientAccountNumber = scanner.nextInt();
+                    bankingSystem.transferFunds(accountNumber, recipientAccountNumber);
+                    break;
+                case 6:
+                    bankingSystem.viewAccountStatements(accountNumber);
+                    break;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+}
